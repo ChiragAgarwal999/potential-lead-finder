@@ -1,3 +1,4 @@
+"use client";
 import { BarChart, Bar, XAxis, ResponsiveContainer } from "recharts";
 const data = [
   { m: "Jan", v: 34 },
