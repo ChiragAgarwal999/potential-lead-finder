@@ -1,5 +1,15 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
 
 class ScrapeRequest(BaseModel):
-    sources: list[str]
-    max_articles_per_source: int = 100
+    sources: list[str] = Field(default_factory=lambda: ["google_news", "sec_filings", "state_rfp"])
+    query: str = "infrastructure expansion"
+    max_articles_per_source: int = 25
+
+
+class SourceArticle(BaseModel):
+    title: str
+    url: str
+    source: str
+    published_at: str
+    content: str
