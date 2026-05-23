@@ -1,3 +1,4 @@
+"use client"
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 
 const trend = [
