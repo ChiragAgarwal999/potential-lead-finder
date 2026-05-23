@@ -1,14 +1,14 @@
 # Architecture
 
-## Core flow
-Scraper -> Cleaning -> Entity Extraction -> Event Classification -> Domain Sentiment (growth/investment/economic/infra) -> Geo tagging -> Impact scoring -> Storage -> Dashboard.
+## Core Flow
+Scraper -> Cleaning -> Entity Extraction -> Event Classification -> Domain Sentiment (growth/investment/economic/infra) -> Geo Tagging -> Impact Scoring -> Storage -> Dashboard.
 
-## Manual-first operations
-- Admin panel triggers source specific ingestion.
-- Queue workers process AI tasks asynchronously.
-- Scheduler module is intentionally disabled by env flag.
+## Manual-first Operations
+- Admin panel triggers source-specific ingestion.
+- Queue workers process AI tasks asynchronously through manual triggers.
+- Scheduler module exists but remains disabled by `ENABLE_SCHEDULER=false`.
 
-## Extensibility
-- OpenSearch adapter interface for full text retrieval.
-- Neo4j-ready graph projection model for entity-event-location relationships.
-- Kafka-ready event bus abstraction in service layer for future streaming.
+## Extensibility Interfaces
+- OpenSearch adapter for full-text retrieval.
+- Graph projection model for entity-event-location relationships.
+- Kafka-ready event bus abstraction for future streaming.

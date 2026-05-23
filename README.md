@@ -1,29 +1,40 @@
-# Real Estate Opportunity Intelligence Platform
+# Potential Lead Finder
 
-Production-grade monorepo delivering a **Bloomberg-style real-estate demand intelligence system**.
+Production-grade full-stack application for enterprise lead opportunity intelligence.
 
 ## Stack
-- Frontend: Next.js 15, React, TypeScript, Tailwind, Framer Motion, shadcn/ui, Recharts, Leaflet
-- Backend: FastAPI async, SQLAlchemy 2, Redis, Celery
-- AI/NLP: Grok adapter, spaCy, sentence-transformers, transformers
-- Data: PostgreSQL + pgvector, OpenSearch-ready abstractions, Neo4j-ready graph model hooks
-- Scraping: BeautifulSoup + Playwright + Scrapy style modular adapters
+- Frontend: Next.js 15, TypeScript, Tailwind CSS, Framer Motion, React Query, Zustand, Recharts, Lucide
+- Backend: FastAPI, Pydantic, SQLAlchemy, PostgreSQL, Alembic
+- Async-ready: Celery-style task abstraction with manual triggers and scheduler feature flag
+- Extensibility: OpenSearch, Kafka event bus, Neo4j-ready graph projection interfaces
 
-## Quickstart
+## Local Development (No Docker)
+
+### 1) Backend
 ```bash
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env.local
-docker compose up --build
+cd backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+uvicorn app.main:app --reload
 ```
 
-## Services
-- `frontend`: dashboard and admin UI
-- `backend`: API + orchestration
-- `worker`: Celery AI processing worker
-- `postgres`, `redis`
+### 2) Frontend
+```bash
+cd frontend
+npm install
+cp .env.example .env.local
+npm run dev
+```
 
-## Manual scraping trigger
-Scraping is manual-only from API/admin UI. Scheduler scaffolding exists but disabled by default (`ENABLE_SCHEDULER=false`).
+Frontend: http://localhost:3000  
+Backend: http://localhost:8000/api/v1/health
 
-## Architecture
-See `docs/architecture.md`.
+## Product Areas
+- Overview Dashboard
+- Source Management
+- Event Intelligence
+- Geographic Intelligence
+- Lead Opportunity Scoring
+- Admin Panel with manual orchestration controls

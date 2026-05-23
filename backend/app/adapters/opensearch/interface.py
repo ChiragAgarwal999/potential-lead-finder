@@ -1,0 +1,3 @@
+class OpenSearchAdapter:
+    async def index_event(self, payload: dict) -> None: ...
+    async def search(self, query: str) -> list[dict]: return []

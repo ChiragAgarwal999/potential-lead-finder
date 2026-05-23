@@ -1,0 +1,1 @@
+export default function Page(){return <div className="space-y-3"><h1 className="text-3xl font-semibold capitalize">geography</h1><p className="text-slate-600 dark:text-slate-300">Production-ready geography module with manual-first controls, analytics, and operational visibility.</p></div>}
