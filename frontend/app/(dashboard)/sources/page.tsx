@@ -2,13 +2,6 @@
 
 import { Fragment, useState } from "react";
 
-type ScrapedItem = {
-  title: string;
-  source: string;
-  published_at: string;
-  url: string;
-};
-
 type SourceRow = {
   name: string;
   status: "Active" | "Paused";
@@ -47,6 +40,23 @@ const impactClasses = (score: number) => {
   if (score >= 40)
     return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300";
   return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300";
+};
+
+const formatPublishedAt = (value: string) => {
+  if (!value) return "—";
+
+  const parsed = Date.parse(value);
+  if (Number.isNaN(parsed)) return value;
+
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC",
+    timeZoneName: "short",
+  }).format(new Date(parsed));
 };
 
 export default function Page() {
@@ -221,9 +231,7 @@ export default function Page() {
                       <td className="p-3 max-w-xs">{item.title}</td>
                       <td className="p-3">{item.source}</td>
                       <td className="p-3">
-                        {item.published_at
-                          ? new Date(item.published_at).toLocaleString()
-                          : "—"}
+                        {formatPublishedAt(item.published_at)}
                       </td>
                       <td className="p-3">
                         <span className="rounded-full px-2 py-1 text-xs font-medium bg-slate-200 dark:bg-slate-700">

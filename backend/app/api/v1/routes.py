@@ -1,47 +1,18 @@
 from fastapi import APIRouter
 from app.schemas.intelligence import ScrapeRequest
-
-# import your scrapers
-from app.scrapers.sources.google_news import (
-    GoogleNewsScraper,
-    SecFilingsScraper,
-    IndiaTenderScraper,
-)
+from app.services.pipeline import scrape_sources
 
 router = APIRouter()
 
 
 @router.post("/scrape/trigger")
 async def trigger_scrape(payload: ScrapeRequest):
-    print("QQQ payload:", payload.model_dump())
-    print("Sources:", payload.sources)
-    print("Query:", payload.query)
-
-    all_items = []
-
-    # Google News
-    if "google_news" in payload.sources:
-        scraper = GoogleNewsScraper()
-        items = await scraper.run(payload.query)
-        all_items.extend(items)
-
-    # SEC Filings
-    if "sec_filings" in payload.sources:
-        scraper = SecFilingsScraper()
-        items = await scraper.run(payload.query)
-        all_items.extend(items)
-
-    # State RFP
-    if "state_rfp" in payload.sources:
-        scraper = IndiaTenderScraper()
-        items = await scraper.run(payload.query)
-        all_items.extend(items)
-
+    processed = await scrape_sources(payload.sources, payload.query)
     return {
         "queued": True,
         "sources": payload.sources,
-        "count": len(all_items),
-        "items": all_items,
+        "count": processed["count"],
+        "items": processed["items"],
     }
 
 
