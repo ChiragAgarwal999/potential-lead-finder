@@ -12,4 +12,7 @@ class SourceArticle(BaseModel):
     url: str
     source: str
     published_at: str
-    content: str
+    event_type: str | None = None
+    impact_score: int | None = None
+    entities: dict | None = None
+    clean_text: str | None = None
