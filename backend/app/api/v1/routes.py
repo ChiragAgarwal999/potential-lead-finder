@@ -1,48 +1,85 @@
+from __future__ import annotations
+
 from fastapi import APIRouter
+
 from app.schemas.intelligence import ScrapeRequest
-from app.scrapers.sources.google_news import (
-    GoogleNewsScraper,
-    SecFilingsScraper,
-    IndiaTenderScraper,
-)
+from app.scrapers.sources.google_news import GoogleNewsScraper, IndiaTenderScraper, SecFilingsScraper
+from app.services.article_extractor import extract_article
+from app.services.entity_extractor import extract_entities
+from app.services.event_classifier import classify_event
+from app.services.file_storage import append_article
+from app.services.impact_scorer import score_impact
+from app.services.text_cleaner import clean_text
 
 router = APIRouter()
+
+
+def _pick_scraper(source: str):
+    if source == "google_news":
+        return GoogleNewsScraper()
+    if source == "sec_filings":
+        return SecFilingsScraper()
+    if source in ["state_rfp", "india_tenders"]:
+        return IndiaTenderScraper()
+    return None
 
 
 @router.post("/scrape/trigger")
 async def trigger_scrape(payload: ScrapeRequest):
     all_items = []
+    errors = []
 
     for source in payload.sources:
+        scraper = _pick_scraper(source)
+        if not scraper:
+            continue
+
         try:
-            if source == "google_news":
-                scraper = GoogleNewsScraper()
-            elif source == "sec_filings":
-                scraper = SecFilingsScraper()
-            elif source in ["state_rfp", "india_tenders"]:
-                scraper = IndiaTenderScraper()
-            else:
-                continue
-
             articles = await scraper.run(payload.query)
+        except Exception as exc:  # major stage guard to preserve existing route behavior
+            errors.append({"source": source, "error": str(exc)})
+            continue
 
-            for article in articles:
-                all_items.append({
-                    "title": article.title,
-                    "url": article.url,
-                    "source": article.source,
-                    "published_at": article.published_at,
-                    "content": article.content,
-                })
+        for article in articles[: payload.max_articles_per_source]:
+            # Core intelligence pipeline: extract -> clean -> NLP -> classify -> score -> store.
+            extracted = extract_article(article.url)
+            raw_text = extracted.get("text") or article.content or ""
+            cleaned = clean_text(raw_text)
+            entities = extract_entities(cleaned)
+            event_type = classify_event(cleaned)
+            impact_score = score_impact(cleaned, entities)
 
-        except Exception as e:
-            print(f"Scraper failed for {source}: {e}")
+            record = {
+                "url": article.url,
+                "title": extracted.get("title") or article.title,
+                "source": article.source,
+                "published_at": extracted.get("publish_date") or article.published_at,
+                "raw_text": raw_text,
+                "clean_text": cleaned,
+                "entities": entities,
+                "event_type": event_type,
+                "impact_score": impact_score,
+            }
+            append_article(record)
 
-    return {
-        "queued": True,
-        "count": len(all_items),
-        "items": all_items,
-    }
+            all_items.append(
+                {
+                    "title": record["title"],
+                    "url": record["url"],
+                    "source": record["source"],
+                    "published_at": record["published_at"],
+                    "event_type": record["event_type"],
+                    "impact_score": record["impact_score"],
+                    "entities": {
+                        "organizations": entities.get("organizations", []),
+                        "locations": entities.get("locations", []),
+                        "money": entities.get("money", []),
+                    },
+                    "clean_text": cleaned,
+                }
+            )
+
+    return {"queued": True, "count": len(all_items), "items": all_items, "errors": errors}
 
 
 @router.get("/articles")
