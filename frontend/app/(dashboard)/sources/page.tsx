@@ -1,6 +1,19 @@
 "use client";
 
 import { useState } from "react";
+type ScrapedItem = {
+  title: string;
+  url: string;
+  source: string;
+  published_at: string;
+  event_type?: string;
+  impact_score?: number;
+  entities?: {
+    organizations?: string[];
+    locations?: string[];
+    money?: string[];
+  };
+};
 
 type SourceRow = {
   name: string;
@@ -20,7 +33,7 @@ export default function Page() {
   const [query, setQuery] = useState("infrastructure projects");
   const [isScraping, setIsScraping] = useState(false);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
-
+  const [scrapedItems, setScrapedItems] = useState<ScrapedItem[]>([]);
   const toggleSource = (sourceName: string) => {
     setSelectedSources((prev) =>
       prev.includes(sourceName)
