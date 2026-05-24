@@ -88,13 +88,13 @@ export default function Page() {
         throw new Error(data?.detail || `Scrape request failed (${response.status})`);
       }
 
-<<<<<<< HEAD
-      const data = await response.json();
-
-      const items = data?.items ?? [];
+      const items: ScrapeItem[] = data?.items ?? [];
+      setScrapedItems(items);
+      setExpandedRow(null);
       setResultMessage(
         `Intelligence pipeline completed for ${selectedSources.length} source(s). ${data?.count ?? 0} processed article(s).`,
       );
+    } catch (error) {
       const message =
         error instanceof Error ? error.message : "An unknown error occurred during scrape.";
       setResultMessage(`Unable to complete scrape: ${message}`);
