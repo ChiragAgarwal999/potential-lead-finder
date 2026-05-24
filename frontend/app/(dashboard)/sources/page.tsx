@@ -2,6 +2,13 @@
 
 import { useState } from "react";
 
+type ScrapedItem = {
+  title: string;
+  source: string;
+  published_at: string;
+  url: string;
+};
+
 type SourceRow = {
   name: string;
   status: "Active" | "Paused";
@@ -20,6 +27,7 @@ export default function Page() {
   const [query, setQuery] = useState("infrastructure projects");
   const [isScraping, setIsScraping] = useState(false);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
+  const [scrapedItems, setScrapedItems] = useState<ScrapedItem[]>([]);
 
   const toggleSource = (sourceName: string) => {
     setSelectedSources((prev) =>
@@ -36,7 +44,7 @@ export default function Page() {
     }
 
     setIsScraping(true);
-    setResultMessage(null);
+    setScrapedItems([]);
 
     try {
       const response = await fetch("http://localhost:8000/api/v1/scrape/trigger", {
@@ -55,7 +63,12 @@ export default function Page() {
       }
 
       const data = await response.json();
-      const leadCount = data?.count ?? 0;
+
+      const items = data?.items ?? [];
+      const leadCount = items.length;
+
+      setScrapedItems(items);
+
       setResultMessage(
         `Scrape completed for ${selectedSources.length} source(s). ${leadCount} lead(s) returned.`,
       );
